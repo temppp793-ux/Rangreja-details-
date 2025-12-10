@@ -7,28 +7,6 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const mobile = searchParams.get('mobile');
     const email = searchParams.get('email');
-
-    // --- SECURITY CHECK START ---
-    const { verifyTurnstileToken, isAllowedDomain } = await import('@/lib/security');
-
-    if (!isAllowedDomain(request)) {
-        return NextResponse.json({ error: "Access Denied: Domain not allowed" }, { status: 403 });
-    }
-
-    const token = request.headers.get('cf-turnstile-response');
-    if (!token) {
-        return NextResponse.json({ error: "Access Denied: Missing CAPTCHA token" }, { status: 403 });
-    }
-
-    // Get IP for Turnstile (optional but good practice)
-    const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for');
-    const isValidToken = await verifyTurnstileToken(token, ip || undefined);
-
-    if (!isValidToken) {
-        return NextResponse.json({ error: "Access Denied: Invalid CAPTCHA" }, { status: 403 });
-    }
-    // --- SECURITY CHECK END ---
-
     const baseUrl = process.env.API_BASE_URL;
 
     if (!baseUrl) {
